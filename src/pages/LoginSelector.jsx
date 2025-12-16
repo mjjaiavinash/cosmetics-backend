@@ -21,11 +21,7 @@ function LoginSelector() {
               <p>Access your account to shop and manage orders</p>
             </Link>
             
-            <Link to="/admin-login" className="login-option admin-login">
-              <div className="option-icon">🛠️</div>
-              <h3>Admin Login</h3>
-              <p>Manage store, products, and dashboard</p>
-            </Link>
+
           </div>
         </div>
       </div>

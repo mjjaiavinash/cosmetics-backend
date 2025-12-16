@@ -1,24 +1,32 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { userAuth } from "../api/userAuth";
 import Navbar from "../components/Navbar";
 
 function Login() {
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
+    setError("");
 
-    const savedUser = localStorage.getItem("username");
-    const savedPass = localStorage.getItem("password");
-
-    if (username === savedUser && password === savedPass) {
-      alert("Login Successful!");
-      navigate("/");
-    } else {
-      alert("Invalid Username or Password!");
+    try {
+      const result = await userAuth.login({ email, password });
+      
+      if (result.success) {
+        localStorage.setItem('user', JSON.stringify(result.user));
+        navigate("/");
+      }
+    } catch (error) {
+      setError(error.message || "Login failed");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -38,12 +46,13 @@ function Login() {
           <form onSubmit={handleSubmit}>
           
           <div className="input-group">
-            <label>Username:</label>
+            <label>Email:</label>
             <input
-              type="text"
-              placeholder="Enter username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              type="email"
+              placeholder="Enter email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
             />
           </div>
 
@@ -62,9 +71,15 @@ function Login() {
             </div>
           </div>
 
-          <button type="submit" className="submit-btn login-btn">
-            Login
+          <button type="submit" className="submit-btn login-btn" disabled={loading}>
+            {loading ? "Logging in..." : "Login"}
           </button>
+
+          {error && (
+            <div style={{color: '#e74c3c', fontSize: '14px', marginTop: '10px', textAlign: 'center'}}>
+              {error}
+            </div>
+          )}
 
           <p className="small-text">
             <a href="/reset-password">Forgot Password?</a>

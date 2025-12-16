@@ -1,53 +1,62 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { userAuth } from "../api/userAuth";
 
 function Signup() {
-  const [username, setUsername] = useState("");
+  const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
 
-  function handleSignup(e) {
+  async function handleSignup(e) {
     e.preventDefault();
+    setLoading(true);
+    setError("");
 
-    // REGEX VALIDATION
-    const usernamePattern = /^[a-zA-Z0-9]{3,}$/;
+    // VALIDATION
     const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[A-Za-z]{2,}$/;
-    const passwordPattern =
-      /^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[@#$%^&*!]).{6,}$/;
+    const passwordPattern = /^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[@#$%^&*!]).{6,}$/;
 
-    if (!usernamePattern.test(username)) {
-      alert("Username must be at least 3 characters & contain only letters or numbers.");
+    if (!fullName.trim()) {
+      setError("Full name is required");
+      setLoading(false);
       return;
     }
 
     if (!emailPattern.test(email)) {
-      alert("Enter a valid email address (example: name@gmail.com).");
+      setError("Enter a valid email address");
+      setLoading(false);
       return;
     }
 
     if (!passwordPattern.test(password)) {
-      alert(
-        "Password must contain:\n• Minimum 6 characters\n• 1 uppercase letter\n• 1 lowercase letter\n• 1 number\n• 1 special character (@#$%^&*!)"
-      );
+      setError("Password must contain: 6+ characters, 1 uppercase, 1 lowercase, 1 number, 1 special character");
+      setLoading(false);
       return;
     }
 
     if (password !== confirm) {
-      alert("Passwords do not match.");
+      setError("Passwords do not match");
+      setLoading(false);
       return;
     }
 
-    // SAVE TO LOCAL STORAGE
-    localStorage.setItem("username", username);
-    localStorage.setItem("email", email);
-    localStorage.setItem("password", password);
-
-    alert("Signup successful! Please login.");
-    navigate("/login");
+    try {
+      const result = await userAuth.signup({ fullName, email, password });
+      
+      if (result.success) {
+        navigate("/login");
+      }
+    } catch (error) {
+      setError(error.message || "Signup failed");
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -66,12 +75,13 @@ function Signup() {
           <form onSubmit={handleSignup}>
           
           <div className="input-group">
-            <label>Username:</label>
+            <label>Full Name:</label>
             <input
               type="text"
-              placeholder="Create username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              placeholder="Enter your full name"
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              required
             />
           </div>
 
@@ -115,7 +125,15 @@ function Signup() {
             </div>
           </div>
 
-          <button type="submit" className="signup-btn submit-btn">Sign Up</button>
+          <button type="submit" className="signup-btn submit-btn" disabled={loading}>
+            {loading ? "Creating Account..." : "Sign Up"}
+          </button>
+
+          {error && (
+            <div style={{color: '#e74c3c', fontSize: '14px', marginTop: '10px', textAlign: 'center'}}>
+              {error}
+            </div>
+          )}
 
           <p className="small-text">
             Already have an account? <a href="/login">Login</a>
