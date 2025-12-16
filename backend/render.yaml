@@ -2,7 +2,8 @@ services:
   - type: web
     name: cosmetics-backend
     env: node
-    buildCommand: npm install
+    rootDir: ./
+    buildCommand: npm install --production
     startCommand: node server.js
     envVars:
       - key: NODE_ENV
