@@ -2,10 +2,10 @@
   "name": "cosmetics-backend",
   "version": "1.0.0",
   "description": "Backend for user authentication",
-  "main": "server.js",
+  "main": "server.cjs",
   "type": "commonjs",
   "scripts": {
-    "start": "node server.js",
+    "start": "node server.cjs",
     "dev": "nodemon server.js"
   },
   "dependencies": {
