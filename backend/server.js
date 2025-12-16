@@ -1,8 +1,18 @@
 const express = require('express');
 const cors = require('cors');
+const mongoose = require('mongoose');
 require('dotenv').config();
 
-const connectDB = require('./config/db');
+// Database connection inline
+const connectDB = async () => {
+  try {
+    await mongoose.connect(process.env.MONGO_URI);
+    console.log('MongoDB connected');
+  } catch (error) {
+    console.error('Database connection failed:', error.message);
+    process.exit(1);
+  }
+};
 const authRoutes = require('./routes/auth');
 const contactRoutes = require('./routes/contact');
 const adminRoutes = require('./routes/admin');
