@@ -19,7 +19,7 @@ function AdminProducts() {
     };
 
     if (editingProduct) {
-      updateProduct(editingProduct.id, productData);
+      updateProduct(editingProduct._id, productData);
     } else {
       addProduct(productData);
     }
@@ -82,11 +82,12 @@ function AdminProducts() {
                 </select>
                 <input
                   type="text"
-                  placeholder="Image URL"
+                  placeholder="Image URL (e.g., images/product.jpg)"
                   value={formData.image}
                   onChange={(e) => setFormData({...formData, image: e.target.value})}
                   required
                 />
+                <small style={{color: '#666', fontSize: '12px'}}>Use: images/face-cream.webp, images/lipstick.jpg, etc.</small>
                 <input
                   type="number"
                   placeholder="Stock Quantity"
@@ -129,21 +130,39 @@ function AdminProducts() {
               </tr>
             </thead>
             <tbody>
-              {products.map(product => (
-                <tr key={product.id}>
-                  <td>
-                    <img src={`/${product.image}`} alt={product.name} className="product-thumb" onError={(e) => e.target.src = '/images/placeholder.jpg'} />
-                  </td>
-                  <td>{product.name}</td>
-                  <td>{product.category}</td>
-                  <td>₹{product.price}</td>
-                  <td className={product.stock < 10 ? 'low-stock' : ''}>{product.stock || 0}</td>
-                  <td>
-                    <button onClick={() => handleEdit(product)} className="edit-btn">Edit</button>
-                    <button onClick={() => handleDelete(product.id)} className="delete-btn">Delete</button>
-                  </td>
+              {products.length === 0 ? (
+                <tr>
+                  <td colSpan="6" style={{textAlign: 'center', padding: '20px'}}>No products found</td>
                 </tr>
-              ))}
+              ) : (
+                products.map(product => (
+                  <tr key={product._id || product.id}>
+                    <td style={{padding: '8px', textAlign: 'center'}}>
+                      <img 
+                        src={product.image.startsWith('http') ? product.image : `/${product.image}`} 
+                        alt={product.name} 
+                        onError={(e) => e.target.src = '/images/placeholder.jpg'}
+                        style={{
+                          width: '50px', 
+                          height: '50px', 
+                          objectFit: 'cover', 
+                          borderRadius: '4px',
+                          display: 'block',
+                          margin: '0 auto'
+                        }}
+                      />
+                    </td>
+                    <td style={{padding: '8px'}}>{product.name}</td>
+                    <td style={{padding: '8px'}}>{product.category}</td>
+                    <td style={{padding: '8px'}}>₹{product.price}</td>
+                    <td style={{padding: '8px'}} className={product.stock < 10 ? 'low-stock' : ''}>{product.stock || 0}</td>
+                    <td style={{padding: '8px'}}>
+                      <button onClick={() => handleEdit(product)} className="edit-btn" style={{marginRight: '5px'}}>Edit</button>
+                      <button onClick={() => handleDelete(product._id)} className="delete-btn">Delete</button>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>

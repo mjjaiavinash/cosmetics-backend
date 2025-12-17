@@ -1,17 +1,21 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { adminAuth } from '../../api/adminAuth';
 
 function AdminLogin() {
   const [credentials, setCredentials] = useState({ username: '', password: '' });
   const navigate = useNavigate();
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    if (credentials.username === 'admin' && credentials.password === 'admin123') {
-      localStorage.setItem('adminLoggedIn', 'true');
-      navigate('/admin');
-    } else {
-      alert('Invalid credentials. Use admin/admin123');
+    try {
+      const result = await adminAuth.login(credentials);
+      if (result.success) {
+        localStorage.setItem('adminLoggedIn', 'true');
+        navigate('/admin');
+      }
+    } catch (error) {
+      alert(error.message || 'Login failed');
     }
   };
 

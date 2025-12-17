@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react';
-import { generateSampleData } from '../utils/sampleData';
+import { adminAuth } from '../api/adminAuth';
 
 const AdminContext = createContext();
 
@@ -20,50 +20,83 @@ export const AdminProvider = ({ children }) => {
   const [settings, setSettings] = useState({});
 
   useEffect(() => {
-    generateSampleData();
-    
-    const savedProducts = JSON.parse(localStorage.getItem('products')) || [];
-    const savedCategories = JSON.parse(localStorage.getItem('categories')) || [
+    // Set categories immediately
+    setCategories([
       { id: 1, name: 'Skincare', subcategories: ['Face Cream', 'Serum', 'Moisturizer', 'Sunscreen'] },
       { id: 2, name: 'Makeup', subcategories: ['Foundation', 'Mascara', 'Lipstick', 'Eyeliner'] },
       { id: 3, name: 'Haircare', subcategories: ['Shampoo', 'Conditioner', 'Hair Oil', 'Hair Mask'] },
       { id: 4, name: 'Perfume', subcategories: ['Floral', 'Citrus', 'Woody', 'Fresh'] }
-    ];
-    const savedOrders = JSON.parse(localStorage.getItem('orders')) || [];
-    const savedCustomers = JSON.parse(localStorage.getItem('customers')) || [];
-    const savedOffers = JSON.parse(localStorage.getItem('offers')) || [];
-    const savedSettings = JSON.parse(localStorage.getItem('adminSettings')) || {
-      storeName: 'Cosmetics Store',
-      currency: '₹',
-      taxRate: 18,
-      shippingFee: 50
-    };
-
-    setProducts(savedProducts);
-    setCategories(savedCategories);
-    setOrders(savedOrders);
-    setCustomers(savedCustomers);
-    setOffers(savedOffers);
-    setSettings(savedSettings);
+    ]);
+    loadData();
   }, []);
 
-  const addProduct = (product) => {
-    const newProduct = { ...product, id: Date.now() };
-    const updatedProducts = [...products, newProduct];
-    setProducts(updatedProducts);
-    localStorage.setItem('products', JSON.stringify(updatedProducts));
+  const loadData = async () => {
+    try {
+      const [productsRes, customersRes] = await Promise.all([
+        adminAuth.getProducts(),
+        adminAuth.getCustomers()
+      ]);
+      
+      setProducts(productsRes.products || []);
+      setCustomers(customersRes.customers || []);
+      
+      // Set categories
+      setCategories([
+        { id: 1, name: 'Skincare', subcategories: ['Face Cream', 'Serum', 'Moisturizer', 'Sunscreen'] },
+        { id: 2, name: 'Makeup', subcategories: ['Foundation', 'Mascara', 'Lipstick', 'Eyeliner'] },
+        { id: 3, name: 'Haircare', subcategories: ['Shampoo', 'Conditioner', 'Hair Oil', 'Hair Mask'] },
+        { id: 4, name: 'Perfume', subcategories: ['Floral', 'Citrus', 'Woody', 'Fresh'] }
+      ]);
+      
+      // Remove orders - set empty array
+      setOrders([]);
+      setOffers([]);
+      setSettings({
+        storeName: 'Cosmetics Store',
+        currency: '₹',
+        taxRate: 18,
+        shippingFee: 50
+      });
+    } catch (error) {
+      console.error('Failed to load data:', error);
+    }
   };
 
-  const updateProduct = (id, updatedProduct) => {
-    const updatedProducts = products.map(p => p.id === id ? { ...p, ...updatedProduct } : p);
-    setProducts(updatedProducts);
-    localStorage.setItem('products', JSON.stringify(updatedProducts));
+  const addProduct = async (product) => {
+    try {
+      const result = await adminAuth.addProduct(product);
+      if (result.success) {
+        setProducts(prevProducts => [...prevProducts, result.product]);
+        alert('Product added successfully!');
+      } else {
+        alert('Failed to add product: ' + result.message);
+      }
+    } catch (error) {
+      console.error('Failed to add product:', error);
+      alert('Error adding product. Make sure backend server is running.');
+    }
   };
 
-  const deleteProduct = (id) => {
-    const updatedProducts = products.filter(p => p.id !== id);
-    setProducts(updatedProducts);
-    localStorage.setItem('products', JSON.stringify(updatedProducts));
+  const updateProduct = async (id, updatedProduct) => {
+    try {
+      const result = await adminAuth.updateProduct(id, updatedProduct);
+      if (result.success) {
+        setProducts(prevProducts => prevProducts.map(p => p._id === id ? result.product : p));
+      }
+    } catch (error) {
+      console.error('Failed to update product:', error);
+    }
+  };
+
+  const deleteProduct = async (id) => {
+    try {
+      const result = await adminAuth.deleteProduct(id);
+      if (result.success) {
+        setProducts(prevProducts => prevProducts.filter(p => p._id !== id));
+      }
+    } catch (error) {
+      console.error('Failed to delete product:', error);
+    }
   };
 
   const addCategory = (category) => {
