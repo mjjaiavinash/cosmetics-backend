@@ -44,12 +44,10 @@ function AdminProducts() {
   return (
     <AdminLayout>
       <div className="admin-products">
-        <div className="page-header">
-          <h1>Products Management</h1>
-          <button onClick={() => setShowForm(true)} className="add-btn">
-            + Add Product
-          </button>
-        </div>
+        <h1>Products Management</h1>
+        <button onClick={() => setShowForm(true)} className="add-btn" style={{marginBottom: '30px'}}>
+          + Add Product
+        </button>
 
         {showForm && (
           <div className="modal-overlay">

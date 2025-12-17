@@ -1,16 +1,59 @@
-import { useAdmin } from '../../context/AdminContext';
+import { useState, useEffect } from 'react';
+import { adminAuth } from '../../api/adminAuth';
 import AdminLayout from '../../components/admin/AdminLayout';
 
 function AdminCustomers() {
-  const { customers, orders } = useAdmin();
+  const [customers, setCustomers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const getCustomerOrders = (customerId) => {
-    return orders.filter(order => order.customerId === customerId);
+  useEffect(() => {
+    fetchCustomers();
+  }, []);
+
+  const fetchCustomers = async () => {
+    try {
+      setLoading(true);
+      const result = await adminAuth.getCustomers();
+      if (result.success) {
+        setCustomers(result.customers || []);
+      } else {
+        setError('Failed to load customers');
+      }
+    } catch (error) {
+      console.error('Error fetching customers:', error);
+      setError('Network error - make sure backend is running');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const getCustomerTotalSpent = (customerId) => {
-    return getCustomerOrders(customerId).reduce((sum, order) => sum + order.total, 0);
-  };
+  if (loading) {
+    return (
+      <AdminLayout>
+        <div className="admin-customers">
+          <h1>Customers Management</h1>
+          <div style={{textAlign: 'center', padding: '50px'}}>
+            <p>Loading customers...</p>
+          </div>
+        </div>
+      </AdminLayout>
+    );
+  }
+
+  if (error) {
+    return (
+      <AdminLayout>
+        <div className="admin-customers">
+          <h1>Customers Management</h1>
+          <div style={{textAlign: 'center', padding: '50px', color: '#e74c3c'}}>
+            <p>{error}</p>
+            <button onClick={fetchCustomers} className="add-btn">Retry</button>
+          </div>
+        </div>
+      </AdminLayout>
+    );
+  }
 
   return (
     <AdminLayout>
@@ -20,11 +63,11 @@ function AdminCustomers() {
         <div className="customers-stats">
           <div className="stat-card">
             <h3>Total Customers</h3>
-            <p>{customers.length}</p>
+            <p className="stat-value">{customers.length}</p>
           </div>
           <div className="stat-card">
-            <h3>Active This Month</h3>
-            <p>{customers.filter(c => c.lastActive && new Date(c.lastActive) > new Date(Date.now() - 30*24*60*60*1000)).length}</p>
+            <h3>Registered Users</h3>
+            <p className="stat-value">{customers.filter(c => c.email).length}</p>
           </div>
         </div>
 
@@ -42,31 +85,30 @@ function AdminCustomers() {
               </tr>
             </thead>
             <tbody>
-              {customers.map(customer => {
-                const customerOrders = getCustomerOrders(customer.id);
-                const totalSpent = getCustomerTotalSpent(customer.id);
-                
-                return (
-                  <tr key={customer.id}>
-                    <td>#{customer.id}</td>
-                    <td>{customer.name}</td>
-                    <td>{customer.email}</td>
+              {customers.length === 0 ? (
+                <tr>
+                  <td colSpan="7" style={{textAlign: 'center', padding: '20px'}}>
+                    No customers found. Customers will appear here when they register.
+                  </td>
+                </tr>
+              ) : (
+                customers.map(customer => (
+                  <tr key={customer._id || customer.id}>
+                    <td>#{customer._id || customer.id}</td>
+                    <td>{customer.fullName || customer.name || 'N/A'}</td>
+                    <td>{customer.email || 'N/A'}</td>
                     <td>{customer.phone || 'N/A'}</td>
-                    <td>{customerOrders.length}</td>
-                    <td>₹{totalSpent.toLocaleString()}</td>
-                    <td>{customer.lastActive ? new Date(customer.lastActive).toLocaleDateString() : 'N/A'}</td>
+                    <td>0</td>
+                    <td>₹0</td>
+                    <td>{customer.createdAt ? new Date(customer.createdAt).toLocaleDateString() : 'N/A'}</td>
                   </tr>
-                );
-              })}
+                ))
+              )}
             </tbody>
           </table>
         </div>
 
-        {customers.length === 0 && (
-          <div className="empty-state">
-            <p>No customers found. Customers will appear here when they register or place orders.</p>
-          </div>
-        )}
+
       </div>
     </AdminLayout>
   );

@@ -92,6 +92,24 @@ export const adminAuth = {
     }
   },
 
+  updateAdmin: async (id, adminData) => {
+    try {
+      const response = await api.put(`/admins/${id}`, adminData);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { success: false, message: 'Network error' };
+    }
+  },
+
+  updateAdmin: async (id, adminData) => {
+    try {
+      const response = await api.put(`/admins/${id}`, adminData);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { success: false, message: 'Network error' };
+    }
+  },
+
   deleteAdmin: async (id) => {
     try {
       const response = await api.delete(`/admins/${id}`);

@@ -53,12 +53,10 @@ function AdminCategories() {
   return (
     <AdminLayout>
       <div className="admin-categories">
-        <div className="page-header">
-          <h1>Categories Management</h1>
-          <button onClick={() => setShowForm(true)} className="add-btn">
-            + Add Category
-          </button>
-        </div>
+        <h1>Categories Management</h1>
+        <button onClick={() => setShowForm(true)} className="add-btn" style={{marginBottom: '30px'}}>
+          + Add Category
+        </button>
 
         {showForm && (
           <div className="modal-overlay">

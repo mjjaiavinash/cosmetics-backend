@@ -172,6 +172,58 @@ a:hover {
     transform: translateY(-2px);
 }
 
+/* User name and logout button styles */
+.user-name {
+    color: #2c3e50 !important;
+    font-weight: 500 !important;
+    padding: 8px 12px !important;
+    background: #f8f9fa !important;
+    border-radius: 6px !important;
+    font-size: 0.9rem !important;
+    white-space: nowrap !important;
+}
+
+.logout-btn-nav {
+    background: #e74c3c !important;
+    color: white !important;
+    border: none !important;
+    padding: 8px 16px !important;
+    border-radius: 6px !important;
+    cursor: pointer !important;
+    font-size: 0.9rem !important;
+    transition: background 0.3s ease !important;
+    white-space: nowrap !important;
+}
+
+.logout-btn-nav:hover {
+    background: #c0392b !important;
+}
+
+/* Navbar layout improvements */
+.hello ul {
+    display: flex;
+    gap: 15px;
+    margin-right: 20px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+@media (max-width: 768px) {
+    .user-name {
+        padding: 6px 10px !important;
+        font-size: 0.8rem !important;
+    }
+    
+    .logout-btn-nav {
+        padding: 6px 12px !important;
+        font-size: 0.8rem !important;
+    }
+    
+    .hello ul {
+        gap: 10px;
+    }
+}
+
 
 
 

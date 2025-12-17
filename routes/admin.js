@@ -13,7 +13,8 @@ router.post('/login', async (req, res) => {
     const { username, password } = req.body;
 
     // Check hardcoded admin first
-    if (username === 'admin' && password === 'admin123') {
+    if ((username === 'admin' && password === 'admin123') || 
+        (username === 'admin@gmail.com' && password === 'admin@123')) {
       return res.json({
         success: true,
         message: 'Admin login successful'
@@ -152,6 +153,28 @@ router.post('/admins', async (req, res) => {
     await admin.save();
     
     res.status(201).json({ success: true, message: 'Admin created successfully' });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// Update admin
+router.put('/admins/:id', async (req, res) => {
+  try {
+    const { username, password } = req.body;
+    const updateData = { username };
+    
+    // Only update password if provided
+    if (password && password.trim() !== '') {
+      updateData.password = await bcrypt.hash(password, 10);
+    }
+    
+    const admin = await Admin.findByIdAndUpdate(req.params.id, updateData, { new: true }).select('-password');
+    if (!admin) {
+      return res.status(404).json({ success: false, message: 'Admin not found' });
+    }
+    
+    res.json({ success: true, message: 'Admin updated successfully', admin });
   } catch (error) {
     res.status(500).json({ success: false, message: 'Server error' });
   }
